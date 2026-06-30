@@ -275,7 +275,7 @@
       gap: 10px;
     }
 
-    button, a.button-link {
+    button {
       min-height: 54px;
       border: 0;
       border-radius: 17px;
@@ -291,19 +291,14 @@
       touch-action: manipulation;
       -webkit-user-select: none;
       user-select: none;
-      text-decoration: none;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
-    button:active, a.button-link:active {
+    button:active {
       transform: scale(0.985);
       filter: brightness(1.1);
     }
 
-    button.secondary, a.secondary {
+    button.secondary {
       background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0)),
         #314256;
@@ -532,7 +527,7 @@
 
     <div class="card">
       <label for="cameraIpInput">ESP camera IP address</label>
-      <input id="cameraIpInput" value="http://192.168.1.123" autocomplete="off" autocorrect="off" autocapitalize="off" />
+      <input id="cameraIpInput" value="http://192.168.68.87" autocomplete="off" autocorrect="off" autocapitalize="off" />
 
       <div class="button-grid">
         <button id="loadCameraBtn" class="green">Load Stream</button>
@@ -543,13 +538,13 @@
 
       <div class="camera-box" id="cameraBox">
         <div class="camera-placeholder" id="cameraPlaceholder">
-          Enter the ESP IP from Serial Monitor, then tap Load Stream.
+          Tap Load Stream. If it does not appear, tap Open Direct.
         </div>
         <img id="cameraImage" alt="Camera stream" style="display: none;" />
       </div>
 
       <div class="tiny">
-        If the preview stays black, tap Open Direct. GitHub is HTTPS and the ESP stream is local HTTP, so some browsers block embedded preview.
+        Default camera address is set to http://192.168.68.87. The app adds /stream or /jpg automatically.
       </div>
     </div>
 
@@ -708,6 +703,14 @@
 
       while (url.endsWith("/")) {
         url = url.substring(0, url.length - 1);
+      }
+
+      if (url.endsWith("/stream")) {
+        url = url.substring(0, url.length - 7);
+      }
+
+      if (url.endsWith("/jpg")) {
+        url = url.substring(0, url.length - 4);
       }
 
       cameraIpInput.value = url;
@@ -1090,6 +1093,7 @@
     });
 
     const savedCameraUrl = localStorage.getItem("geassCameraUrl");
+
     if (savedCameraUrl) {
       cameraIpInput.value = savedCameraUrl;
     }
