@@ -12,21 +12,18 @@
   <style>
     :root {
       --bg: #050713;
-      --bg-2: #07111f;
-      --card: rgba(15, 27, 46, 0.82);
-      --card-2: rgba(19, 36, 61, 0.9);
+      --card: rgba(15, 27, 46, 0.86);
       --line: rgba(70, 200, 255, 0.22);
       --text: #f2fbff;
       --muted: #8fb6ca;
-      --muted-2: #5f7f91;
+      --muted2: #5f7f91;
       --cyan: #13d9ff;
       --blue: #0b8fff;
       --purple: #7c3aed;
       --green: #20d982;
       --red: #ff4d5e;
-      --yellow: #ffd166;
       --shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
-      --glow: 0 0 24px rgba(19, 217, 255, 0.24);
+      --glow: 0 0 24px rgba(19, 217, 255, 0.22);
     }
 
     * {
@@ -278,7 +275,7 @@
       gap: 10px;
     }
 
-    button {
+    button, a.button-link {
       min-height: 54px;
       border: 0;
       border-radius: 17px;
@@ -294,14 +291,19 @@
       touch-action: manipulation;
       -webkit-user-select: none;
       user-select: none;
+      text-decoration: none;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    button:active {
+    button:active, a.button-link:active {
       transform: scale(0.985);
       filter: brightness(1.1);
     }
 
-    button.secondary {
+    button.secondary, a.secondary {
       background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0)),
         #314256;
@@ -337,10 +339,6 @@
       box-shadow: none;
     }
 
-    .input-wrap {
-      margin-top: 8px;
-    }
-
     label {
       display: block;
       color: var(--muted);
@@ -368,6 +366,36 @@
     input:focus {
       border-color: rgba(19, 217, 255, 0.8);
       box-shadow: 0 0 0 4px rgba(19, 217, 255, 0.12);
+    }
+
+    .camera-box {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      border-radius: 18px;
+      border: 1px solid rgba(19, 217, 255, 0.3);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(19, 217, 255, 0.12), transparent 58%),
+        #02070c;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .camera-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .camera-placeholder {
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+      padding: 18px;
+      line-height: 1.4;
     }
 
     .quick-row {
@@ -441,15 +469,11 @@
     }
 
     .tiny {
-      color: var(--muted-2);
+      color: var(--muted2);
       font-size: 12px;
       line-height: 1.45;
       padding: 6px 4px 0;
       text-align: center;
-    }
-
-    .footer-space {
-      height: 8px;
     }
 
     @media (max-width: 360px) {
@@ -481,7 +505,7 @@
           <div class="logo" aria-hidden="true"></div>
           <div>
             <h1>GEASS</h1>
-            <div class="subtitle">Phone link controller</div>
+            <div class="subtitle">Phone link + camera monitor</div>
           </div>
         </div>
 
@@ -499,16 +523,41 @@
             <span id="oledBle">NO BLE</span>
           </div>
           <div id="oledMain" class="oled-mid">DISCONNECTED</div>
-          <div id="oledSub" class="oled-bottom">Connect to your glasses</div>
+          <div id="oledSub" class="oled-bottom">Connect BLE or load camera</div>
         </div>
       </div>
     </div>
 
-    <div class="section-title">Connection</div>
+    <div class="section-title">Camera Stream</div>
+
+    <div class="card">
+      <label for="cameraIpInput">ESP camera IP address</label>
+      <input id="cameraIpInput" value="http://192.168.1.123" autocomplete="off" autocorrect="off" autocapitalize="off" />
+
+      <div class="button-grid">
+        <button id="loadCameraBtn" class="green">Load Stream</button>
+        <button id="stopCameraBtn" class="secondary">Stop Stream</button>
+        <button id="snapshotBtn">Snapshot</button>
+        <button id="openCameraBtn" class="power">Open Direct</button>
+      </div>
+
+      <div class="camera-box" id="cameraBox">
+        <div class="camera-placeholder" id="cameraPlaceholder">
+          Enter the ESP IP from Serial Monitor, then tap Load Stream.
+        </div>
+        <img id="cameraImage" alt="Camera stream" style="display: none;" />
+      </div>
+
+      <div class="tiny">
+        If the preview stays black, tap Open Direct. GitHub is HTTPS and the ESP stream is local HTTP, so some browsers block embedded preview.
+      </div>
+    </div>
+
+    <div class="section-title">BLE Connection</div>
 
     <div class="card">
       <div class="button-grid">
-        <button id="connectBtn">Connect</button>
+        <button id="connectBtn">Connect BLE</button>
         <button id="disconnectBtn" class="secondary" disabled>Disconnect</button>
       </div>
     </div>
@@ -553,11 +602,9 @@
     <div class="section-title">Message</div>
 
     <div class="card">
-      <div class="input-wrap">
-        <label for="messageInput">Custom message</label>
-        <input id="messageInput" value="HELLO GEASS" autocomplete="off" autocorrect="off" autocapitalize="characters" />
-        <button id="sendMessageBtn" disabled>Send Message</button>
-      </div>
+      <label for="messageInput">Custom message</label>
+      <input id="messageInput" value="HELLO GEASS" autocomplete="off" autocorrect="off" autocapitalize="characters" />
+      <button id="sendMessageBtn" disabled>Send Message</button>
     </div>
 
     <div class="section-title">Advanced</div>
@@ -566,11 +613,9 @@
       <details>
         <summary>Raw command and log</summary>
 
-        <div class="input-wrap" style="margin-top: 12px;">
-          <label for="commandInput">Raw command</label>
-          <input id="commandInput" value="MSG:RAW TEST" autocomplete="off" autocorrect="off" autocapitalize="characters" />
-          <button id="sendCommandBtn" disabled>Send Raw Command</button>
-        </div>
+        <label for="commandInput" style="margin-top: 12px;">Raw command</label>
+        <input id="commandInput" value="MSG:RAW TEST" autocomplete="off" autocorrect="off" autocapitalize="characters" />
+        <button id="sendCommandBtn" disabled>Send Raw Command</button>
 
         <button id="clearLogBtn" class="danger">Clear Log</button>
         <div id="logBox" class="log"></div>
@@ -578,10 +623,8 @@
     </div>
 
     <div class="tiny">
-      Open in Bluefy or WebBLE on iPhone. Safari usually will not connect to BLE devices.
+      Camera firmware uses Wi-Fi. BLE buttons only work when your ESP is running the BLE/OLED Geass firmware.
     </div>
-
-    <div class="footer-space"></div>
   </div>
 
   <script>
@@ -627,6 +670,14 @@
     const messageInput = document.getElementById("messageInput");
     const commandInput = document.getElementById("commandInput");
 
+    const cameraIpInput = document.getElementById("cameraIpInput");
+    const loadCameraBtn = document.getElementById("loadCameraBtn");
+    const stopCameraBtn = document.getElementById("stopCameraBtn");
+    const snapshotBtn = document.getElementById("snapshotBtn");
+    const openCameraBtn = document.getElementById("openCameraBtn");
+    const cameraImage = document.getElementById("cameraImage");
+    const cameraPlaceholder = document.getElementById("cameraPlaceholder");
+
     function vibrate(ms = 18) {
       if (navigator.vibrate) {
         navigator.vibrate(ms);
@@ -642,6 +693,82 @@
 
       logBox.textContent += "[" + time + "] " + message + "\n";
       logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function normalizeCameraBaseUrl() {
+      let url = cameraIpInput.value.trim();
+
+      if (url.length === 0) {
+        return "";
+      }
+
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        url = "http://" + url;
+      }
+
+      while (url.endsWith("/")) {
+        url = url.substring(0, url.length - 1);
+      }
+
+      cameraIpInput.value = url;
+      localStorage.setItem("geassCameraUrl", url);
+
+      return url;
+    }
+
+    function loadCameraStream() {
+      const baseUrl = normalizeCameraBaseUrl();
+
+      if (!baseUrl) {
+        setPreview("NO CAMERA IP", "Enter ESP IP first");
+        return;
+      }
+
+      cameraPlaceholder.style.display = "none";
+      cameraImage.style.display = "block";
+      cameraImage.src = baseUrl + "/stream?t=" + Date.now();
+
+      setPreview("CAMERA STREAM", baseUrl);
+      log("Camera stream: " + baseUrl + "/stream");
+      vibrate(15);
+    }
+
+    function stopCameraStream() {
+      cameraImage.removeAttribute("src");
+      cameraImage.style.display = "none";
+      cameraPlaceholder.style.display = "block";
+      cameraPlaceholder.textContent = "Stream stopped.";
+      setPreview("CAMERA STOPPED", "Stream off");
+      log("Camera stream stopped");
+    }
+
+    function takeSnapshot() {
+      const baseUrl = normalizeCameraBaseUrl();
+
+      if (!baseUrl) {
+        setPreview("NO CAMERA IP", "Enter ESP IP first");
+        return;
+      }
+
+      cameraPlaceholder.style.display = "none";
+      cameraImage.style.display = "block";
+      cameraImage.src = baseUrl + "/jpg?t=" + Date.now();
+
+      setPreview("SNAPSHOT", baseUrl);
+      log("Snapshot: " + baseUrl + "/jpg");
+      vibrate(15);
+    }
+
+    function openCameraDirect() {
+      const baseUrl = normalizeCameraBaseUrl();
+
+      if (!baseUrl) {
+        setPreview("NO CAMERA IP", "Enter ESP IP first");
+        return;
+      }
+
+      window.open(baseUrl, "_blank");
+      log("Opening direct camera page: " + baseUrl);
     }
 
     function setPreview(main, sub = "") {
@@ -696,12 +823,21 @@
       return "TIME:" + hours + ":" + minutes + ":" + seconds + suffix;
     }
 
-    function getPreviewTime() {
-      return getTimeCommand().replace("TIME:", "");
+    function getDisplayTimeNoSeconds() {
+      const now = new Date();
+
+      let hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const suffix = hours >= 12 ? "P" : "A";
+
+      hours = hours % 12;
+      if (hours === 0) hours = 12;
+
+      return hours + ":" + minutes + suffix;
     }
 
     function updateLocalClock() {
-      oledTime.textContent = getPreviewTime();
+      oledTime.textContent = getDisplayTimeNoSeconds();
     }
 
     function startAutoTimeSync() {
@@ -752,7 +888,7 @@
 
         if (showPreview) {
           if (command.startsWith("TIME:")) {
-            setPreview("TIME SYNCED", command.replace("TIME:", ""));
+            setPreview("TIME SYNCED", getDisplayTimeNoSeconds());
           } else if (command.startsWith("MSG:")) {
             const msg = command.replace("MSG:", "");
             setPreview("PHONE LINK", msg);
@@ -785,8 +921,8 @@
       oledBle.textContent = "NO BLE";
 
       updateButtons();
-      setPreview("DISCONNECTED", "Connect to your glasses");
-      log("Device disconnected");
+      setPreview("BLE DISCONNECTED", "Camera can still use Wi-Fi");
+      log("BLE device disconnected");
     }
 
     async function connectToGeass() {
@@ -841,7 +977,7 @@
         connected = true;
         updateButtons();
         setStatus("Connected");
-        setPreview("CONNECTED", "Auto-syncing time");
+        setPreview("BLE CONNECTED", "Auto-syncing time");
 
         setTimeout(function() {
           sendCommand(getTimeCommand());
@@ -927,6 +1063,11 @@
       vibrate(10);
     });
 
+    loadCameraBtn.addEventListener("click", loadCameraStream);
+    stopCameraBtn.addEventListener("click", stopCameraStream);
+    snapshotBtn.addEventListener("click", takeSnapshot);
+    openCameraBtn.addEventListener("click", openCameraDirect);
+
     messageInput.addEventListener("keydown", function(event) {
       if (event.key === "Enter") {
         event.preventDefault();
@@ -941,11 +1082,23 @@
       }
     });
 
+    cameraIpInput.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        loadCameraStream();
+      }
+    });
+
+    const savedCameraUrl = localStorage.getItem("geassCameraUrl");
+    if (savedCameraUrl) {
+      cameraIpInput.value = savedCameraUrl;
+    }
+
     setInterval(updateLocalClock, 1000);
 
     updateLocalClock();
     updateButtons();
-    log("GeassLink loaded");
+    log("GeassLink camera app loaded");
   </script>
 </body>
 </html>
