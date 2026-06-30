@@ -278,10 +278,6 @@
       gap: 10px;
     }
 
-    .button-grid.single {
-      grid-template-columns: 1fr;
-    }
-
     button {
       min-height: 54px;
       border: 0;
@@ -691,12 +687,13 @@
 
       let hours = now.getHours();
       const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
       const suffix = hours >= 12 ? "P" : "A";
 
       hours = hours % 12;
       if (hours === 0) hours = 12;
 
-      return "TIME:" + hours + ":" + minutes + suffix;
+      return "TIME:" + hours + ":" + minutes + ":" + seconds + suffix;
     }
 
     function getPreviewTime() {
