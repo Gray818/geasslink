@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeassLink</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 18px;
+      background: #07111f;
+      color: #e8f7ff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 30px;
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      color: #8fcce8;
+      margin-bottom: 18px;
+      font-size: 14px;
+    }
+
+    .card {
+      background: #0d1b2d;
+      border: 1px solid #1c6ea4;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 0 16px rgba(0, 180, 255, 0.12);
+    }
+
+    .status {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .status strong {
+      color: #ffffff;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 13px 14px;
+      margin: 7px 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: white;
+      background: #0b8fff;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #34495e;
+    }
+
+    button.power {
+      background: #7c3aed;
+    }
+
+    button.danger {
+      background: #b3261e;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #2e6f9e;
+      border-radius: 12px;
+      padding: 13px;
+      margin: 7px 0;
+      font-size: 16px;
+      background: #07111f;
+      color: #ffffff;
+      outline: none;
+    }
+
+    label {
+      display: block;
+      color: #a8d8ef;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .log {
+      background: #03070d;
+      border-radius: 12px;
+      padding: 10px;
+      min-height: 90px;
+      max-height: 180px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: #b8e9ff;
+    }
+
+    .tiny {
+      color: #7fb4cc;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <h1>GEASS LINK</h1>
+    <div class="subtitle">iPhone → BLE → XIAO ESP32S3 → OLED</div>
+
+    <div class="card status">
+      <div><strong>Status:</strong> <span id="statusText">Disconnected</span></div>
+      <div><strong>Device:</strong> <span id="deviceText">None</span></div>
+      <div><strong>Last sent:</strong> <span id="lastSentText">None</span></div>
+    </div>
+
+    <div class="card">
+      <button id="connectBtn">Connect to GEASS</button>
+      <button id="disconnectBtn" class="secondary" disabled>Disconnect</button>
+    </div>
+
+    <div class="card">
+      <button id="syncTimeBtn" disabled>Sync Current Time</button>
+      <button id="sendTestBtn" disabled>Send Test Message</button>
+      <button id="sendHomeBtn" disabled>Send Home Screen Data</button>
+    </div>
+
+    <div class="card">
+      <label for="messageInput">Custom message</label>
+      <input id="messageInput" value="HELLO GEASS" />
+      <button id="sendMessageBtn" disabled>Send Message</button>
+    </div>
+
+    <div class="card">
+      <label for="commandInput">Raw command</label>
+      <input id="commandInput" value="MSG:RAW TEST" />
+      <button id="sendCommandBtn" disabled>Send Raw Command</button>
+    </div>
+
+    <div class="card">
+      <button id="clearLogBtn" class="danger">Clear Log</button>
+      <div id="logBox" class="log"></div>
+    </div>
+
+    <div class="tiny">
+      Open this page inside Bluefy or WebBLE on iPhone. Safari usually will not work for Web Bluetooth.
+    </div>
+  </div>
+
+  <script>
+    const SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+    const RX_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+    const TX_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+
+    let device = null;
+    let server = null;
+    let service = null;
+    let rxCharacteristic = null;
+    let txCharacteristic = null;
+    let connected = false;
+
+    const statusText = document.getElementById("statusText");
+    const deviceText = document.getElementById("deviceText");
+    const lastSentText = document.getElementById("lastSentText");
+    const logBox = document.getElementById("logBox");
+
+    const connectBtn = document.getElementById("connectBtn");
+    const disconnectBtn = document.getElementById("disconnectBtn");
+    const syncTimeBtn = document.getElementById("syncTimeBtn");
+    const sendTestBtn = document.getElementById("sendTestBtn");
+    const sendHomeBtn = document.getElementById("sendHomeBtn");
+    const sendMessageBtn = document.getElementById("sendMessageBtn");
+    const sendCommandBtn = document.getElementById("sendCommandBtn");
+    const clearLogBtn = document.getElementById("clearLogBtn");
+
+    const messageInput = document.getElementById("messageInput");
+    const commandInput = document.getElementById("commandInput");
+
+    function log(message) {
+      const time = new Date().toLocaleTimeString();
+      logBox.textContent += "[" + time + "] " + message + "\n";
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function setStatus(message) {
+      statusText.textContent = message;
+      log(message);
+    }
+
+    function updateButtons() {
+      connectBtn.disabled = connected;
+      disconnectBtn.disabled = !connected;
+      syncTimeBtn.disabled = !connected;
+      sendTestBtn.disabled = !connected;
+      sendHomeBtn.disabled = !connected;
+      sendMessageBtn.disabled = !connected;
+      sendCommandBtn.disabled = !connected;
+    }
+
+    function getTimeCommand() {
+      const now = new Date();
+
+      let hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const suffix = hours >= 12 ? "P" : "A";
+
+      hours = hours % 12;
+      if (hours === 0) hours = 12;
+
+      return "TIME:" + hours + ":" + minutes + suffix;
+    }
+
+    async function sendCommand(command) {
+      if (!connected || !rxCharacteristic) {
+        setStatus("Not connected");
+        return;
+      }
+
+      try {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(command);
+
+        await rxCharacteristic.writeValue(data);
+
+        lastSentText.textContent = command;
+        log("Sent: " + command);
+      } catch (error) {
+        setStatus("Send failed");
+        log("Error: " + error.message);
+      }
+    }
+
+    function handleDisconnected() {
+      connected = false;
+      rxCharacteristic = null;
+      txCharacteristic = null;
+      server = null;
+      service = null;
+
+      statusText.textContent = "Disconnected";
+      updateButtons();
+      log("Device disconnected");
+    }
+
+    async function connectToGeass() {
+      if (!navigator.bluetooth) {
+        setStatus("Web Bluetooth not available. Open this in Bluefy or WebBLE.");
+        return;
+      }
+
+      try {
+        setStatus("Scanning...");
+
+        device = await navigator.bluetooth.requestDevice({
+          filters: [
+            { namePrefix: "GEASS" },
+            { services: [SERVICE_UUID] }
+          ],
+          optionalServices: [SERVICE_UUID]
+        });
+
+        deviceText.textContent = device.name || "GEASS device";
+        device.addEventListener("gattserverdisconnected", handleDisconnected);
+
+        setStatus("Connecting...");
+        server = await device.gatt.connect();
+
+        setStatus("Finding service...");
+        service = await server.getPrimaryService(SERVICE_UUID);
+
+        setStatus("Finding RX...");
+        rxCharacteristic = await service.getCharacteristic(RX_UUID);
+
+        try {
+          txCharacteristic = await service.getCharacteristic(TX_UUID);
+
+          await txCharacteristic.startNotifications();
+          txCharacteristic.addEventListener("characteristicvaluechanged", function(event) {
+            const decoder = new TextDecoder();
+            const text = decoder.decode(event.target.value);
+            log("ESP replied: " + text);
+          });
+
+          log("TX notifications enabled");
+        } catch (error) {
+          log("TX notify not available, continuing anyway");
+        }
+
+        connected = true;
+        updateButtons();
+
+        setStatus("Connected");
+
+        setTimeout(function() {
+          sendCommand(getTimeCommand());
+        }, 350);
+
+      } catch (error) {
+        connected = false;
+        updateButtons();
+        setStatus("Connection failed");
+        log("Error: " + error.message);
+      }
+    }
+
+    async function disconnectGeass() {
+      if (device && device.gatt && device.gatt.connected) {
+        device.gatt.disconnect();
+      }
+
+      handleDisconnected();
+    }
+
+    connectBtn.addEventListener("click", connectToGeass);
+    disconnectBtn.addEventListener("click", disconnectGeass);
+
+    syncTimeBtn.addEventListener("click", function() {
+      sendCommand(getTimeCommand());
+    });
+
+    sendTestBtn.addEventListener("click", function() {
+      sendCommand("MSG:HELLO GEASS");
+    });
+
+    sendHomeBtn.addEventListener("click", async function() {
+      await sendCommand(getTimeCommand());
+      await new Promise(resolve => setTimeout(resolve, 150));
+      await sendCommand("MSG:PHONE LINK OK");
+    });
+
+    sendMessageBtn.addEventListener("click", function() {
+      const message = messageInput.value.trim();
+
+      if (message.length === 0) {
+        sendCommand("MSG:EMPTY");
+      } else {
+        sendCommand("MSG:" + message);
+      }
+    });
+
+    sendCommandBtn.addEventListener("click", function() {
+      const command = commandInput.value.trim();
+
+      if (command.length > 0) {
+        sendCommand(command);
+      }
+    });
+
+    clearLogBtn.addEventListener("click", function() {
+      logBox.textContent = "";
+    });
+
+    updateButtons();
+    log("GeassLink loaded");
+  </script>
+</body>
+</html>
