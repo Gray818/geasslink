@@ -2,166 +2,590 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
+  />
+  <meta name="theme-color" content="#050713" />
   <title>GeassLink</title>
 
   <style>
+    :root {
+      --bg: #050713;
+      --bg-2: #07111f;
+      --card: rgba(15, 27, 46, 0.82);
+      --card-2: rgba(19, 36, 61, 0.9);
+      --line: rgba(70, 200, 255, 0.22);
+      --text: #f2fbff;
+      --muted: #8fb6ca;
+      --muted-2: #5f7f91;
+      --cyan: #13d9ff;
+      --blue: #0b8fff;
+      --purple: #7c3aed;
+      --green: #20d982;
+      --red: #ff4d5e;
+      --yellow: #ffd166;
+      --shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+      --glow: 0 0 24px rgba(19, 217, 255, 0.24);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--bg);
+    }
+
     body {
       margin: 0;
-      padding: 18px;
-      background: #07111f;
-      color: #e8f7ff;
+      min-height: 100vh;
+      color: var(--text);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(19, 217, 255, 0.22), transparent 34%),
+        radial-gradient(circle at 85% 12%, rgba(124, 58, 237, 0.22), transparent 30%),
+        linear-gradient(180deg, #050713 0%, #07111f 48%, #03060d 100%);
+      padding:
+        calc(14px + env(safe-area-inset-top))
+        14px
+        calc(22px + env(safe-area-inset-bottom));
+      overflow-x: hidden;
     }
 
     .app {
-      max-width: 480px;
+      width: 100%;
+      max-width: 460px;
       margin: 0 auto;
     }
 
+    .hero {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      padding-top: 4px;
+      padding-bottom: 12px;
+      background: linear-gradient(180deg, rgba(5, 7, 19, 0.96), rgba(5, 7, 19, 0.72), transparent);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at 50% 52%, rgba(255, 255, 255, 0.9) 0 3px, transparent 4px),
+        conic-gradient(from 210deg, #13d9ff, #7c3aed, #13d9ff);
+      box-shadow: var(--glow);
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .logo::before,
+    .logo::after {
+      content: "";
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.92);
+      border-top: 0;
+      border-radius: 0 0 18px 18px;
+    }
+
+    .logo::before {
+      top: 13px;
+      height: 16px;
+      transform: rotate(180deg);
+      border-radius: 18px 18px 0 0;
+      border-top: 2px solid rgba(255, 255, 255, 0.92);
+      border-bottom: 0;
+    }
+
+    .logo::after {
+      bottom: 13px;
+      height: 16px;
+    }
+
     h1 {
-      margin: 0 0 4px;
+      margin: 0;
       font-size: 30px;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
+      line-height: 1;
     }
 
     .subtitle {
-      color: #8fcce8;
-      margin-bottom: 18px;
-      font-size: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 5px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 34px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--red);
+      box-shadow: 0 0 12px rgba(255, 77, 94, 0.6);
+    }
+
+    .dot.connected {
+      background: var(--green);
+      box-shadow: 0 0 12px rgba(32, 217, 130, 0.7);
+    }
+
+    .oled {
+      margin-top: 14px;
+      border-radius: 22px;
+      padding: 12px;
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02)),
+        rgba(6, 13, 24, 0.88);
+      border: 1px solid rgba(19, 217, 255, 0.22);
+      box-shadow: var(--shadow), var(--glow);
+    }
+
+    .oled-screen {
+      height: 116px;
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(0, 238, 255, 0.18), transparent 55%),
+        #02070c;
+      border: 1px solid rgba(19, 217, 255, 0.36);
+      box-shadow: inset 0 0 24px rgba(19, 217, 255, 0.12);
+      padding: 13px 14px;
+      overflow: hidden;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #d9fbff;
+      text-shadow: 0 0 10px rgba(19, 217, 255, 0.8);
+    }
+
+    .oled-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      line-height: 1;
+      opacity: 0.95;
+    }
+
+    .oled-mid {
+      margin-top: 22px;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .oled-bottom {
+      margin-top: 14px;
+      font-size: 12px;
+      color: #9cefff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .section-title {
+      margin: 18px 4px 8px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 1.3px;
     }
 
     .card {
-      background: #0d1b2d;
-      border: 1px solid #1c6ea4;
-      border-radius: 16px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
       padding: 14px;
-      margin-bottom: 14px;
-      box-shadow: 0 0 16px rgba(0, 180, 255, 0.12);
+      margin-bottom: 12px;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
     }
 
-    .status {
-      font-size: 15px;
-      line-height: 1.5;
+    .status-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
     }
 
-    .status strong {
-      color: #ffffff;
+    .status-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 11px 12px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      min-height: 46px;
+    }
+
+    .status-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .status-value {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 760;
+      text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 230px;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .button-grid.single {
+      grid-template-columns: 1fr;
     }
 
     button {
-      width: 100%;
+      min-height: 54px;
       border: 0;
-      border-radius: 12px;
+      border-radius: 17px;
       padding: 13px 14px;
-      margin: 7px 0;
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 850;
       color: white;
-      background: #0b8fff;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0)),
+        var(--blue);
+      box-shadow: 0 12px 22px rgba(11, 143, 255, 0.24);
       cursor: pointer;
+      touch-action: manipulation;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    button:active {
+      transform: scale(0.985);
+      filter: brightness(1.1);
     }
 
     button.secondary {
-      background: #34495e;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0)),
+        #314256;
+      box-shadow: none;
     }
 
     button.power {
-      background: #7c3aed;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0)),
+        var(--purple);
+      box-shadow: 0 12px 22px rgba(124, 58, 237, 0.22);
+    }
+
+    button.green {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0)),
+        #0fbf73;
+      box-shadow: 0 12px 22px rgba(32, 217, 130, 0.18);
     }
 
     button.danger {
-      background: #b3261e;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0)),
+        #b3261e;
+      box-shadow: none;
     }
 
     button:disabled {
-      opacity: 0.45;
+      opacity: 0.42;
       cursor: not-allowed;
+      transform: none;
+      filter: grayscale(0.2);
+      box-shadow: none;
     }
 
-    input {
-      width: 100%;
-      box-sizing: border-box;
-      border: 1px solid #2e6f9e;
-      border-radius: 12px;
-      padding: 13px;
-      margin: 7px 0;
-      font-size: 16px;
-      background: #07111f;
-      color: #ffffff;
-      outline: none;
+    .input-wrap {
+      margin-top: 8px;
     }
 
     label {
       display: block;
-      color: #a8d8ef;
+      color: var(--muted);
       font-size: 13px;
-      margin-top: 8px;
+      font-weight: 750;
+      margin: 0 0 7px 2px;
+    }
+
+    input {
+      width: 100%;
+      min-height: 54px;
+      border: 1px solid rgba(19, 217, 255, 0.32);
+      border-radius: 17px;
+      padding: 14px 15px;
+      margin: 0 0 10px;
+      font-size: 16px;
+      background: rgba(2, 7, 12, 0.78);
+      color: #ffffff;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      box-shadow: inset 0 0 14px rgba(19, 217, 255, 0.05);
+    }
+
+    input:focus {
+      border-color: rgba(19, 217, 255, 0.8);
+      box-shadow: 0 0 0 4px rgba(19, 217, 255, 0.12);
+    }
+
+    .quick-row {
+      display: flex;
+      gap: 9px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+
+    .quick-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chip {
+      flex: 0 0 auto;
+      min-height: 42px;
+      border-radius: 999px;
+      padding: 0 14px;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      color: var(--text);
+      box-shadow: none;
+    }
+
+    details {
+      overflow: hidden;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-weight: 850;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 36px;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    summary::after {
+      content: "⌄";
+      font-size: 20px;
+      color: var(--cyan);
+      transition: transform 0.18s ease;
+    }
+
+    details[open] summary::after {
+      transform: rotate(180deg);
     }
 
     .log {
-      background: #03070d;
-      border-radius: 12px;
-      padding: 10px;
-      min-height: 90px;
+      background: rgba(2, 7, 12, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 11px;
+      min-height: 94px;
       max-height: 180px;
       overflow-y: auto;
       white-space: pre-wrap;
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 12px;
+      line-height: 1.45;
       color: #b8e9ff;
     }
 
     .tiny {
-      color: #7fb4cc;
+      color: var(--muted-2);
       font-size: 12px;
-      line-height: 1.4;
+      line-height: 1.45;
+      padding: 6px 4px 0;
+      text-align: center;
+    }
+
+    .footer-space {
+      height: 8px;
+    }
+
+    @media (max-width: 360px) {
+      h1 {
+        font-size: 26px;
+      }
+
+      .logo {
+        width: 44px;
+        height: 44px;
+      }
+
+      .button-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .status-value {
+        max-width: 170px;
+      }
     }
   </style>
 </head>
 
 <body>
   <div class="app">
-    <h1>GEASS LINK</h1>
-    <div class="subtitle">iPhone → BLE → XIAO ESP32S3 → OLED</div>
+    <div class="hero">
+      <div class="title-row">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <h1>GEASS</h1>
+            <div class="subtitle">Phone link controller</div>
+          </div>
+        </div>
 
-    <div class="card status">
-      <div><strong>Status:</strong> <span id="statusText">Disconnected</span></div>
-      <div><strong>Device:</strong> <span id="deviceText">None</span></div>
-      <div><strong>Last sent:</strong> <span id="lastSentText">None</span></div>
+        <div class="pill">
+          <span id="statusDot" class="dot"></span>
+          <span id="miniStatusText">Offline</span>
+        </div>
+      </div>
+
+      <div class="oled">
+        <div class="oled-screen">
+          <div class="oled-top">
+            <span id="oledTime">SYNC</span>
+            <span>GEASS LINK</span>
+            <span id="oledBle">NO BLE</span>
+          </div>
+          <div id="oledMain" class="oled-mid">DISCONNECTED</div>
+          <div id="oledSub" class="oled-bottom">Connect to your glasses</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Connection</div>
+
+    <div class="card">
+      <div class="button-grid">
+        <button id="connectBtn">Connect</button>
+        <button id="disconnectBtn" class="secondary" disabled>Disconnect</button>
+      </div>
+    </div>
+
+    <div class="card status-grid">
+      <div class="status-item">
+        <div class="status-label">Status</div>
+        <div id="statusText" class="status-value">Disconnected</div>
+      </div>
+
+      <div class="status-item">
+        <div class="status-label">Device</div>
+        <div id="deviceText" class="status-value">None</div>
+      </div>
+
+      <div class="status-item">
+        <div class="status-label">Last sent</div>
+        <div id="lastSentText" class="status-value">None</div>
+      </div>
+    </div>
+
+    <div class="section-title">Quick Actions</div>
+
+    <div class="card">
+      <div class="button-grid">
+        <button id="syncTimeBtn" class="green" disabled>Sync Time</button>
+        <button id="sendTestBtn" disabled>Test Message</button>
+        <button id="sendHomeBtn" class="power" disabled>Home Data</button>
+        <button id="sendWaitingBtn" class="secondary" disabled>Waiting Screen</button>
+      </div>
     </div>
 
     <div class="card">
-      <button id="connectBtn">Connect to GEASS</button>
-      <button id="disconnectBtn" class="secondary" disabled>Disconnect</button>
+      <div class="quick-row">
+        <button class="chip" id="quickHelloBtn" disabled>Hello</button>
+        <button class="chip" id="quickClassBtn" disabled>Class</button>
+        <button class="chip" id="quickWeatherBtn" disabled>Weather</button>
+        <button class="chip" id="quickNavBtn" disabled>Nav</button>
+      </div>
     </div>
 
-    <div class="card">
-      <button id="syncTimeBtn" disabled>Sync Current Time</button>
-      <button id="sendTestBtn" disabled>Send Test Message</button>
-      <button id="sendHomeBtn" disabled>Send Home Screen Data</button>
-    </div>
+    <div class="section-title">Message</div>
 
     <div class="card">
-      <label for="messageInput">Custom message</label>
-      <input id="messageInput" value="HELLO GEASS" />
-      <button id="sendMessageBtn" disabled>Send Message</button>
+      <div class="input-wrap">
+        <label for="messageInput">Custom message</label>
+        <input id="messageInput" value="HELLO GEASS" autocomplete="off" autocorrect="off" autocapitalize="characters" />
+        <button id="sendMessageBtn" disabled>Send Message</button>
+      </div>
     </div>
 
-    <div class="card">
-      <label for="commandInput">Raw command</label>
-      <input id="commandInput" value="MSG:RAW TEST" />
-      <button id="sendCommandBtn" disabled>Send Raw Command</button>
-    </div>
+    <div class="section-title">Advanced</div>
 
     <div class="card">
-      <button id="clearLogBtn" class="danger">Clear Log</button>
-      <div id="logBox" class="log"></div>
+      <details>
+        <summary>Raw command and log</summary>
+
+        <div class="input-wrap" style="margin-top: 12px;">
+          <label for="commandInput">Raw command</label>
+          <input id="commandInput" value="MSG:RAW TEST" autocomplete="off" autocorrect="off" autocapitalize="characters" />
+          <button id="sendCommandBtn" disabled>Send Raw Command</button>
+        </div>
+
+        <button id="clearLogBtn" class="danger">Clear Log</button>
+        <div id="logBox" class="log"></div>
+      </details>
     </div>
 
     <div class="tiny">
-      Open this page inside Bluefy or WebBLE on iPhone. Safari usually will not work for Web Bluetooth.
+      Open in Bluefy or WebBLE on iPhone. Safari usually will not connect to BLE devices.
     </div>
+
+    <div class="footer-space"></div>
   </div>
 
   <script>
@@ -175,43 +599,91 @@
     let rxCharacteristic = null;
     let txCharacteristic = null;
     let connected = false;
+    let autoTimeTimer = null;
 
     const statusText = document.getElementById("statusText");
+    const miniStatusText = document.getElementById("miniStatusText");
+    const statusDot = document.getElementById("statusDot");
     const deviceText = document.getElementById("deviceText");
     const lastSentText = document.getElementById("lastSentText");
     const logBox = document.getElementById("logBox");
+
+    const oledTime = document.getElementById("oledTime");
+    const oledBle = document.getElementById("oledBle");
+    const oledMain = document.getElementById("oledMain");
+    const oledSub = document.getElementById("oledSub");
 
     const connectBtn = document.getElementById("connectBtn");
     const disconnectBtn = document.getElementById("disconnectBtn");
     const syncTimeBtn = document.getElementById("syncTimeBtn");
     const sendTestBtn = document.getElementById("sendTestBtn");
     const sendHomeBtn = document.getElementById("sendHomeBtn");
+    const sendWaitingBtn = document.getElementById("sendWaitingBtn");
     const sendMessageBtn = document.getElementById("sendMessageBtn");
     const sendCommandBtn = document.getElementById("sendCommandBtn");
     const clearLogBtn = document.getElementById("clearLogBtn");
 
+    const quickHelloBtn = document.getElementById("quickHelloBtn");
+    const quickClassBtn = document.getElementById("quickClassBtn");
+    const quickWeatherBtn = document.getElementById("quickWeatherBtn");
+    const quickNavBtn = document.getElementById("quickNavBtn");
+
     const messageInput = document.getElementById("messageInput");
     const commandInput = document.getElementById("commandInput");
 
+    function vibrate(ms = 18) {
+      if (navigator.vibrate) {
+        navigator.vibrate(ms);
+      }
+    }
+
     function log(message) {
-      const time = new Date().toLocaleTimeString();
+      const time = new Date().toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+
       logBox.textContent += "[" + time + "] " + message + "\n";
       logBox.scrollTop = logBox.scrollHeight;
     }
 
+    function setPreview(main, sub = "") {
+      oledMain.textContent = main || "";
+      oledSub.textContent = sub || "";
+    }
+
     function setStatus(message) {
       statusText.textContent = message;
+      miniStatusText.textContent = connected ? "Online" : "Offline";
+
+      if (connected) {
+        statusDot.classList.add("connected");
+        oledBle.textContent = "BLE";
+      } else {
+        statusDot.classList.remove("connected");
+        oledBle.textContent = "NO BLE";
+      }
+
       log(message);
     }
 
     function updateButtons() {
-      connectBtn.disabled = connected;
-      disconnectBtn.disabled = !connected;
-      syncTimeBtn.disabled = !connected;
-      sendTestBtn.disabled = !connected;
-      sendHomeBtn.disabled = !connected;
-      sendMessageBtn.disabled = !connected;
-      sendCommandBtn.disabled = !connected;
+      const enabled = connected;
+
+      connectBtn.disabled = enabled;
+      disconnectBtn.disabled = !enabled;
+      syncTimeBtn.disabled = !enabled;
+      sendTestBtn.disabled = !enabled;
+      sendHomeBtn.disabled = !enabled;
+      sendWaitingBtn.disabled = !enabled;
+      sendMessageBtn.disabled = !enabled;
+      sendCommandBtn.disabled = !enabled;
+
+      quickHelloBtn.disabled = !enabled;
+      quickClassBtn.disabled = !enabled;
+      quickWeatherBtn.disabled = !enabled;
+      quickNavBtn.disabled = !enabled;
     }
 
     function getTimeCommand() {
@@ -227,7 +699,46 @@
       return "TIME:" + hours + ":" + minutes + suffix;
     }
 
-    async function sendCommand(command) {
+    function getPreviewTime() {
+      return getTimeCommand().replace("TIME:", "");
+    }
+
+    function updateLocalClock() {
+      oledTime.textContent = getPreviewTime();
+    }
+
+    function startAutoTimeSync() {
+      stopAutoTimeSync();
+
+      autoTimeTimer = setInterval(function() {
+        if (connected) {
+          sendCommand(getTimeCommand(), false);
+        }
+      }, 60000);
+    }
+
+    function stopAutoTimeSync() {
+      if (autoTimeTimer) {
+        clearInterval(autoTimeTimer);
+        autoTimeTimer = null;
+      }
+    }
+
+    async function writeToRx(data) {
+      if (rxCharacteristic.writeValueWithResponse && rxCharacteristic.properties.write) {
+        await rxCharacteristic.writeValueWithResponse(data);
+        return;
+      }
+
+      if (rxCharacteristic.writeValueWithoutResponse && rxCharacteristic.properties.writeWithoutResponse) {
+        await rxCharacteristic.writeValueWithoutResponse(data);
+        return;
+      }
+
+      await rxCharacteristic.writeValue(data);
+    }
+
+    async function sendCommand(command, showPreview = true) {
       if (!connected || !rxCharacteristic) {
         setStatus("Not connected");
         return;
@@ -237,13 +748,28 @@
         const encoder = new TextEncoder();
         const data = encoder.encode(command);
 
-        await rxCharacteristic.writeValue(data);
+        await writeToRx(data);
 
         lastSentText.textContent = command;
         log("Sent: " + command);
+
+        if (showPreview) {
+          if (command.startsWith("TIME:")) {
+            setPreview("TIME SYNCED", command.replace("TIME:", ""));
+          } else if (command.startsWith("MSG:")) {
+            const msg = command.replace("MSG:", "");
+            setPreview("PHONE LINK", msg);
+          } else {
+            setPreview("COMMAND SENT", command);
+          }
+        }
+
+        vibrate(14);
       } catch (error) {
         setStatus("Send failed");
+        setPreview("SEND FAILED", error.message);
         log("Error: " + error.message);
+        vibrate(60);
       }
     }
 
@@ -254,19 +780,28 @@
       server = null;
       service = null;
 
+      stopAutoTimeSync();
+
       statusText.textContent = "Disconnected";
+      miniStatusText.textContent = "Offline";
+      statusDot.classList.remove("connected");
+      oledBle.textContent = "NO BLE";
+
       updateButtons();
+      setPreview("DISCONNECTED", "Connect to your glasses");
       log("Device disconnected");
     }
 
     async function connectToGeass() {
       if (!navigator.bluetooth) {
-        setStatus("Web Bluetooth not available. Open this in Bluefy or WebBLE.");
+        setStatus("Web Bluetooth not available");
+        setPreview("NO WEB BLE", "Open in Bluefy or WebBLE");
         return;
       }
 
       try {
         setStatus("Scanning...");
+        setPreview("SCANNING", "Choose GEASS device");
 
         device = await navigator.bluetooth.requestDevice({
           filters: [
@@ -280,6 +815,8 @@
         device.addEventListener("gattserverdisconnected", handleDisconnected);
 
         setStatus("Connecting...");
+        setPreview("CONNECTING", device.name || "GEASS device");
+
         server = await device.gatt.connect();
 
         setStatus("Finding service...");
@@ -292,6 +829,7 @@
           txCharacteristic = await service.getCharacteristic(TX_UUID);
 
           await txCharacteristic.startNotifications();
+
           txCharacteristic.addEventListener("characteristicvaluechanged", function(event) {
             const decoder = new TextDecoder();
             const text = decoder.decode(event.target.value);
@@ -300,23 +838,27 @@
 
           log("TX notifications enabled");
         } catch (error) {
-          log("TX notify not available, continuing anyway");
+          log("TX notify not available, continuing");
         }
 
         connected = true;
         updateButtons();
-
         setStatus("Connected");
+        setPreview("CONNECTED", "Auto-syncing time");
 
         setTimeout(function() {
           sendCommand(getTimeCommand());
         }, 350);
 
+        startAutoTimeSync();
+        vibrate(25);
       } catch (error) {
         connected = false;
         updateButtons();
         setStatus("Connection failed");
+        setPreview("CONNECT FAILED", error.message);
         log("Error: " + error.message);
+        vibrate(70);
       }
     }
 
@@ -341,8 +883,28 @@
 
     sendHomeBtn.addEventListener("click", async function() {
       await sendCommand(getTimeCommand());
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 160));
       await sendCommand("MSG:PHONE LINK OK");
+    });
+
+    sendWaitingBtn.addEventListener("click", function() {
+      sendCommand("MSG:WAITING");
+    });
+
+    quickHelloBtn.addEventListener("click", function() {
+      sendCommand("MSG:HELLO GEASS");
+    });
+
+    quickClassBtn.addEventListener("click", function() {
+      sendCommand("MSG:CLASS IN 10 MIN");
+    });
+
+    quickWeatherBtn.addEventListener("click", function() {
+      sendCommand("MSG:84F CLOUDY");
+    });
+
+    quickNavBtn.addEventListener("click", function() {
+      sendCommand("MSG:NAV >");
     });
 
     sendMessageBtn.addEventListener("click", function() {
@@ -365,8 +927,26 @@
 
     clearLogBtn.addEventListener("click", function() {
       logBox.textContent = "";
+      vibrate(10);
     });
 
+    messageInput.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        sendMessageBtn.click();
+      }
+    });
+
+    commandInput.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        sendCommandBtn.click();
+      }
+    });
+
+    setInterval(updateLocalClock, 1000);
+
+    updateLocalClock();
     updateButtons();
     log("GeassLink loaded");
   </script>
